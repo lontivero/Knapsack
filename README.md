@@ -1,6 +1,6 @@
 # Knapsack bitcoin coinjoin analysis
 
-<aside class="warn">**WARINING:** this is draft for learning and keeping record of that</aside>.
+**WARINING:** this is draft for learning and keeping record of that.
 
 
 `Knapsack` coinjoin transactions are described in the paper [Anonymous CoinJoin Transactions with Arbitrary Values](https://www.comsys.rwth-aachen.de/fileadmin/papers/2017/2017-maurer-trustcom-coinjoin.pdf) and it is a novel way to mix transactions is such a way that the application of [well-known heuristics](https://cseweb.ucsd.edu/~smeiklejohn/files/imc13.pdf) is difficult in terms of complexity and also quite time consuming.
