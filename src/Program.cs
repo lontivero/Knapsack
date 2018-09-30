@@ -100,13 +100,14 @@ namespace ConsoleApp14
 
         public static void Analyse(Transaction tx)
         {
-            var inpComb = tx.Inputs .CombinationsWithoutRepetition(1, 7);
-            var outComb = tx.Outputs.CombinationsWithoutRepetition(1, 2);
+            var inpComb = tx.Inputs .Combinations(1, 7);
+            var outComb = tx.Outputs.Combinations(1, 5);
 
             var i = 0UL;
             var n = 0;
             foreach(var outs in outComb)
             {
+                var sum = outs.Sum();
                 foreach(var inps in inpComb)
                 {
                     if(i % 1237 == 0 && !Console.IsOutputRedirected)
@@ -115,7 +116,7 @@ namespace ConsoleApp14
                         Console.Write($"Analizing {i} combinations");
                     }
                     i++;
-                    if (inps.Sum() == outs.Sum())
+                    if (inps.Sum() == sum)
                     {
                         Console.WriteLine($"\t# {n++}\t Tx found!!!");
                         Console.WriteLine(new Transaction{
@@ -185,24 +186,18 @@ namespace ConsoleApp14
 
     static class LinqExtensions
     {
-        public static IEnumerable<IEnumerable<T>> CombinationsWithoutRepetition<T>(
-            this IEnumerable<T> items,
-            int ofLength)
+        public static IEnumerable<IEnumerable<T>> Combinations<T>( this IEnumerable<T> items, int len)
         {
-            return (ofLength == 1) ?
+            return (len == 1) ?
                 items.Select(item => new[] { item }) :
                 items.SelectMany((item, i) => items.Skip(i + 1)
-                    .CombinationsWithoutRepetition(ofLength - 1)
+                    .Combinations(len - 1)
                     .Select(result => new T[] { item }.Concat(result)));
         }
 
-        public static IEnumerable<IEnumerable<T>> CombinationsWithoutRepetition<T>(
-            this IEnumerable<T> items,
-            int ofLength,
-            int upToLength)
+        public static IEnumerable<IEnumerable<T>> Combinations<T>( this IEnumerable<T> items, int low, int high)
         {
-            return Enumerable.Range(1, Math.Max(0, upToLength))
-                            .SelectMany(len => items.CombinationsWithoutRepetition(ofLength: len));
+            return Enumerable.Range(low, high).SelectMany(len => items.Combinations(len));
         }
     }
 }
