@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace ConsoleApp14
@@ -19,6 +20,24 @@ namespace ConsoleApp14
             Console.WriteLine("==============================================================================");
 
             var txs = Utility.RandomTransactions().Take(txCount).OrderByDescending(x=>x.Outputs.Sum()).ToList();
+
+/*
+//            var txs = Utility.RandomTransactions().Take(txCount).OrderByDescending(x=>x.Outputs.Sum()).ToList();
+            var txs = new []{
+                new Transaction(){
+                    Inputs = new List<decimal>(new decimal[]{0.13m}),
+                    Outputs = new List<decimal>(new decimal[]{0.1m, 0.03m})
+                },
+                new Transaction(){
+                    Inputs = new List<decimal>(new decimal[]{0.12m}),
+                    Outputs = new List<decimal>(new decimal[]{0.1m, 0.02m})
+                },
+                new Transaction(){
+                    Inputs = new List<decimal>(new decimal[]{0.11m}),
+                    Outputs = new List<decimal>(new decimal[]{0.1m, 0.01m})
+                }
+            };
+*/
 
             foreach (var tx in txs) 
             {
@@ -78,7 +97,7 @@ namespace ConsoleApp14
 
         public static IEnumerable<decimal> RealizeSubsum(IEnumerable<decimal> coins, decimal subsum) 
         {
-            foreach (var coin in coins.OrderByDescending(x=>x)) 
+            foreach (var coin in coins) 
             {
                 if (subsum == 0)
                 {
@@ -98,6 +117,55 @@ namespace ConsoleApp14
             }
         }
 
+        public static IEnumerable<IEnumerable<decimal>> FindPartitions(IEnumerable<decimal> inputSet, IEnumerable<decimal> sums)
+        {
+            foreach(var subSet in inputSet.Combinations(1, Math.Min(7, inputSet.Count())))
+            {
+                if(sums.Contains(subSet.Sum()) )
+                {
+                    foreach(var partition in FindPartitions(inputSet.Except(subSet), sums))
+                    {
+                        yield return subSet.Concat(partition); 
+                    }
+                }
+            }
+            yield return Enumerable.Empty<decimal>(); 
+        }
+
+/*
+        public static IEnumerable<IEnumerable<decimal>> FindPartitions(IEnumerable<decimal> inputSet, IEnumerable<decimal> sums)
+        {
+            foreach(var subSet in inputSet.Combinations(1, Math.Min(7, inputSet.Count())))
+            {
+                if(sums.Contains(subSet.Sum()) )
+                {
+                    yield return subSet; 
+                }
+            }
+            yield return Enumerable.Empty<decimal>(); 
+        }
+*/
+
+        public static void Analyse(Transaction tx)
+        {
+            var allPossibleOutputs = tx.Outputs.Combinations(1, tx.Outputs.Count()).ToList();
+            var partitions = FindPartitions(tx.Inputs, allPossibleOutputs.Select(x=>x.Sum()).Distinct());
+
+            var n = 0;
+            foreach(var partition in partitions)
+            {
+                foreach(var outputCombination in allPossibleOutputs.Where(x=>x.Sum() == partition.Sum()))
+                {
+                    Console.WriteLine($"\t# {n++}");
+                    Console.WriteLine(new Transaction{
+                        Inputs = partition.ToList(),
+                        Outputs= outputCombination.ToList()
+                    });
+                }
+            }
+        }
+
+#if FALSE
         public static void Analyse(Transaction tx)
         {
             var inpComb = tx.Inputs .Combinations(1, 7);
@@ -127,7 +195,9 @@ namespace ConsoleApp14
                 }
             }
         }
+#endif
     }
+    
 
     public static class Utility 
     {
